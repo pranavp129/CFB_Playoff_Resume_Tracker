@@ -104,10 +104,10 @@ for(col in c("Quad1_Win", "Quad1_Loss", "Other_Loss", "Remaining_Q1")) {
 resume <- resume %>%
   mutate(across(c(Quad1_Win, Quad1_Loss, Other_Loss, Remaining_Q1), ~coalesce(.x, ""))) %>%
   select(team, 
-         "Quad 1 Wins" = Quad1_Win,
-         "Quad 1 Losses" = Quad1_Loss,
+         "Q1 Wins" = Quad1_Win,
+         "Q1 Losses" = Quad1_Loss,
          "Other Losses" = Other_Loss,
-         "Remaining Quad 1 Games" = Remaining_Q1)
+         "Remaining Q1 Games" = Remaining_Q1)
 
 # ----------------------------
 # 6) Prepare Plot-Ready Data
@@ -116,8 +116,8 @@ teams_logos <- cfbd_team_info() %>%
   select(team = school, logo)
 
 plot_data <- resume %>%
-  pivot_longer(cols = c("Quad 1 Wins", "Quad 1 Losses", "Other Losses",
-                        "Remaining Quad 1 Games"),
+  pivot_longer(cols = c("Q1 Wins", "Q1 Losses", "Other Losses",
+                        "Remaining Q1 Games"),
                names_to = "ResultType", values_to = "Opponents") %>%
   mutate(Opponents = ifelse(Opponents == "", NA, Opponents)) %>%
   separate_rows(Opponents, sep = ",\\s*") %>%
