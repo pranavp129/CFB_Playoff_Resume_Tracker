@@ -82,7 +82,6 @@ games_ranked <- games %>%
       completed & ((home_away == "home_team" & home_points < away_points) |
                      (home_away == "away_team" & away_points < home_points)) & opp_total_rank > 34 ~ "Other_Loss",
       !completed & opp_total_rank <= 34 ~ "Remaining_Q1",
-      !completed & opp_total_rank > 34 & opp_total_rank <= 68 ~ "Remaining_Q2",
       TRUE ~ NA_character_
     )
   ) %>%
@@ -100,19 +99,18 @@ resume <- resume %>%
 
 
 # Ensure all expected columns exist
-for(col in c("Quad1_Win", "Quad1_Loss", "Other_Loss", "Remaining_Q1", "Remaining_Q2")) {
+for(col in c("Quad1_Win", "Quad1_Loss", "Other_Loss", "Remaining_Q1")) {
   if(!col %in% names(resume)) resume[[col]] <- ""
 }
 
 # Replace NA with empty string and rename columns
 resume <- resume %>%
-  mutate(across(c(Quad1_Win, Quad1_Loss, Other_Loss, Remaining_Q1, Remaining_Q2), ~coalesce(.x, ""))) %>%
+  mutate(across(c(Quad1_Win, Quad1_Loss, Other_Loss, Remaining_Q1), ~coalesce(.x, ""))) %>%
   select(team, 
          "Quad 1 Wins" = Quad1_Win,
          "Quad 1 Losses" = Quad1_Loss,
          "Other Losses" = Other_Loss,
-         "Remaining Quad 1 Games" = Remaining_Q1,
-         "Remaining Quad 2 Games" = Remaining_Q2)
+         "Remaining Quad 1 Games" = Remaining_Q1)
 
 library(dplyr)
 library(tidyr)
@@ -127,7 +125,7 @@ teams_logos <- cfbd_team_info() %>%
 # Prepare resume_long
 resume_long <- resume %>%
   pivot_longer(cols = c("Quad 1 Wins", "Quad 1 Losses", "Other Losses",
-                        "Remaining Quad 1 Games", "Remaining Quad 2 Games"),
+                        "Remaining Quad 1 Games"),
                names_to = "ResultType", values_to = "Opponents") %>%
   mutate(Opponents = ifelse(Opponents == "", NA, Opponents)) %>%
   separate_rows(Opponents, sep = ",\\s*") %>%
@@ -144,7 +142,6 @@ plot_data <- plot_data %>%
   group_by(team, ResultType) %>%
   mutate(offset = 0.2 * (row_number() - 1)) %>% # horizontal offset
   ungroup()
-
 
 
 # ------------------------------
@@ -169,7 +166,7 @@ row_lookup <- tibble(
 
 # Map ResultType to numeric x positions
 result_levels <- c("Quad 1 Wins", "Quad 1 Losses", "Other Losses",
-                   "Remaining Quad 1 Games", "Remaining Quad 2 Games")
+                   "Remaining Quad 1 Games")
 
 plot_data2 <- plot_data %>%
   mutate(ResultType = factor(ResultType, levels = result_levels)) %>%
@@ -276,7 +273,7 @@ ggplot(plot_data_dynamic, aes(x = col_id_centered, y = row_id)) +
   labs(x = "", 
        y = "", 
        title = "AP Top 25 CFB Playoff Resumes",
-       subtitle = "Quad 1 = Teams ranked 1-34; Quad 2 = Teams ranked 34-68; Rankings created by a formula consisted of AP Rank, SRS, SP+, and ELO Ratings") +
+       subtitle = "Quad 1 = Teams ranked 1-34; Rankings created by a formula consisting of AP Rank, SRS, SP+, and ELO Ratings") +
   theme(
     axis.text.y = element_blank(),
     axis.text.x = element_text(size = 10),
