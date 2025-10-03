@@ -15,7 +15,7 @@ test_contenders <- c("Ohio State", "Oregon", "Alabama", "Georgia", "Texas", "LSU
 fbs_conf <- c("ACC", "Big 12", "Big Ten", "SEC", "Pac-12", "Conference USA", "Mid-American", "Mountain West", "FBS Independents", "Sun Belt", "American Athletic")
 
 # Get AP Rankings
-ap_poll <- cfbd_rankings(year = 2025, season_type = "regular", week = 5) %>%
+ap_poll <- cfbd_rankings(year = 2025, season_type = "regular", week = 6) %>%
   filter(poll == "AP Top 25") %>% 
   select("team" = school, "AP_Rank" = rank)
 
@@ -94,6 +94,11 @@ resume <- games_ranked %>%
   summarise(opponents = paste(opp, collapse = ", "), .groups = "drop") %>%
   pivot_wider(names_from = result_type, values_from = opponents)
 
+# rank by AP top 25
+resume <- resume %>%
+  slice(match(contenders, team))
+
+
 # Ensure all expected columns exist
 for(col in c("Quad1_Win", "Quad1_Loss", "Other_Loss", "Remaining_Q1", "Remaining_Q2")) {
   if(!col %in% names(resume)) resume[[col]] <- ""
@@ -153,14 +158,14 @@ library(ggimage)
 # -------------------
 
 # Stable ordering of teams (descending like before)
-team_levels <- sort(unique(plot_data$team), decreasing = TRUE)
+team_levels <- unique(plot_data$team)
 
 row_lookup <- tibble(
   team = team_levels,
-  row_id = seq_along(team_levels)
+  row_id = seq_along(contenders)  # row numbers follow contenders order
 ) %>%
   left_join(teams_logos %>% rename(team_logo = logo), by = "team") %>%
-  mutate(shade = ifelse(row_id %% 2 == 0, "grey95", "white"))  # alternating stripes
+  mutate(shade = ifelse(row_id %% 2 == 0, "grey95", "white"))
 
 # Map ResultType to numeric x positions
 result_levels <- c("Quad 1 Wins", "Quad 1 Losses", "Other Losses",
@@ -200,61 +205,62 @@ plot_data_correct <- plot_data2 %>%
   ) %>%
   ungroup()
 
-# Dynamic spacing + adaptive logo size
+# ---- Logo scaling tweaks ----
+
+# number of teams (rows)
+n_teams <- nrow(row_lookup)
+
+# base logo size relative to row count
+base_team_logo_size <- 0.8 / n_teams
+base_opp_logo_size  <- 0.7 / n_teams
+
+# adjust opponent logos per cell
 plot_data_dynamic <- plot_data_correct %>%
   group_by(team, ResultType) %>%
   mutate(
     n_logos = n(),
-    # Max total width per column ~0.8 units; shrink spacing if many logos
+    # spacing shrinks if more logos in cell
     spacing = ifelse(n_logos > 4, 0.8 / (n_logos - 1), 0.2),
     offset_center = spacing * (row_number() - 1) - spacing * (n_logos - 1)/2,
     col_id_centered = as.numeric(ResultType) + offset_center,
-    # Adaptive logo size: shrink slightly for dense columns
-    logo_size = ifelse(n_logos > 4, 0.06 - 0.01*(n_logos-4), 0.06)
+    # logo size shrinks with both row count AND crowdedness
+    logo_size = ifelse(
+      n_logos > 4,
+      base_opp_logo_size * (4 / n_logos), # shrink if >4 logos
+      base_opp_logo_size
+    )
   ) %>%
   ungroup()
 
-# x-axis max based on largest offset
+# max x for plot width
 x_max <- max(plot_data_dynamic$col_id_centered) + 0.5
 
-# number of teams
-n_teams <- nrow(row_lookup)
-
-# scale logo sizes dynamically based on row count
-team_logo_size <- 0.8 / n_teams   # for team logos
-opp_logo_size  <- 0.7 / n_teams   # for opponent logos
-
-
-# plot
+# ---- Final plot ----
 ggplot(plot_data_dynamic, aes(x = col_id_centered, y = row_id)) +
-  # alternating stripes (slightly taller to fully hold team logo)
+  # alternating shaded rows
   geom_tile(data = row_lookup, aes(x = 3, y = row_id, fill = shade),
             width = Inf, height = 1.05, inherit.aes = FALSE) +
   scale_fill_identity() +
   
-  # horizontal grid lines
+  # horizontal + vertical grid lines
   geom_hline(yintercept = 0.5:(max(plot_data_dynamic$row_id)+0.5), 
              color = "grey60", size = 0.3) +
-  
-  # vertical grid lines
   geom_vline(xintercept = 0.5 + 0:length(result_levels), 
              color = "grey85", size = 0.3) +
   
-  # thicker line between team logos and opponents
+  # divider between team logos and results
   geom_vline(xintercept = 0.5, color = "black", size = 1) +
   
-  # opponent logos
+  # opponent logos (scaled per row and crowdedness)
   geom_image(
-    aes(image = OppLogo),
-    size = opp_logo_size
+    aes(image = OppLogo, size = I(logo_size))
   ) +
   
-  # team logos
+  # team logos (scaled only by number of rows)
   geom_image(
     data = row_lookup,
-    aes(x = 0.25, y = row_id),
-    image = row_lookup$team_logo,
-    size = team_logo_size,
+    aes(x = 0.25, y = row_id, image = team_logo),
+    size = base_team_logo_size,
     inherit.aes = FALSE
   ) +
   
@@ -264,7 +270,7 @@ ggplot(plot_data_dynamic, aes(x = col_id_centered, y = row_id)) +
     limits = c(0, x_max),
     expand = c(0,0)
   ) +
-  scale_y_continuous(breaks = NULL, expand = c(0,0)) +
+  scale_y_continuous(breaks = NULL, expand = c(0,0), trans = "reverse") +
   coord_cartesian(clip = "off") +
   theme_minimal() +
   labs(x = "", y = "", title = "CFB Playoff Resume by Team") +
@@ -273,4 +279,3 @@ ggplot(plot_data_dynamic, aes(x = col_id_centered, y = row_id)) +
     axis.text.x = element_text(size = 10),
     panel.grid = element_blank()
   )
-
