@@ -104,7 +104,7 @@ ggplot(plot_data, aes(x = col_id_left, y = row_id)) +
     x = "", 
     y = "", 
     title = "AP Top 25 CFB Playoff Resumes (Week 6)",
-    subtitle = "Quad 1 (Q1) = Teams ranked 1-34; Rankings are a composite of AP, SRS, SP+, ELO",
+    subtitle = "Quad 1 (Q1) = Teams ranked 1-34; Rankings are a composite of AP, SRS, SP+, and ELO ratings",
     caption = "*Data: CFBFastR*
     **Pranav Pitchala**"
   ) +
