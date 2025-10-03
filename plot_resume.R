@@ -68,7 +68,7 @@ x_max <- max(plot_data$col_id_left) + 1
 ggplot(plot_data, aes(x = col_id_left, y = row_id)) +
   # horizontal and vertical grid lines
   geom_hline(yintercept = 0.5:(nrow(row_lookup)+0.5), color = "grey30", size = 0.3) +
-  geom_vline(xintercept = unlist(col_borders[result_levels]) - 0.05, color = "grey30", size = 0.3) +
+  geom_vline(xintercept = unlist(col_borders[result_levels]) - 0.05, color = "grey60", size = 0.3) +
 
   # vertical divider between team logos and result columns
   geom_vline(xintercept = 0.2, color = "black", size = 1) +
@@ -84,7 +84,8 @@ ggplot(plot_data, aes(x = col_id_left, y = row_id)) +
   
   # x-axis setup
   scale_x_continuous(
-    breaks = unlist(col_borders[result_levels]) - 0.02,
+    #breaks = unlist(col_borders[result_levels]) - 0.02,
+    breaks = c(0.275, 0.425, 0.575, 0.775),
     labels = result_levels,
     limits = c(0, x_max),
     expand = c(0,0),
@@ -109,7 +110,7 @@ ggplot(plot_data, aes(x = col_id_left, y = row_id)) +
   ) +
   theme(
     axis.text.y = element_blank(),
-    axis.text.x = element_text(size = 12, hjust = 0),
+    axis.text.x = element_text(size = 12, face = "bold"),
     panel.grid = element_blank(),
-    plot.background  = element_rect(fill = "grey70", color = NA)
+    plot.background  = element_rect(fill = "grey75", color = NA)
   )
