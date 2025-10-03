@@ -59,7 +59,7 @@ plot_data <- plot_data %>%
   ungroup()
 
 # Maximum x-axis value for plot limits
-x_max <- max(plot_data$col_id_left) + 1
+x_max <- max(plot_data$col_id_left) + .05
 
 # ----------------------------
 # 5) Create Plot
@@ -103,8 +103,8 @@ ggplot(plot_data, aes(x = col_id_left, y = row_id)) +
   labs(
     x = "", 
     y = "", 
-    title = "AP Top 25 CFB Playoff Resumes",
-    subtitle = "Quad 1 (Q1) = Teams ranked 1-34; Rankings from AP, SRS, SP+, ELO",
+    title = "AP Top 25 CFB Playoff Resumes (Week 6)",
+    subtitle = "Quad 1 (Q1) = Teams ranked 1-34; Rankings are a composite of AP, SRS, SP+, ELO",
     caption = "*Data: CFBFastR*
     **Pranav Pitchala**"
   ) +
@@ -112,5 +112,8 @@ ggplot(plot_data, aes(x = col_id_left, y = row_id)) +
     axis.text.y = element_blank(),
     axis.text.x = element_text(size = 12, face = "bold"),
     panel.grid = element_blank(),
-    plot.background  = element_rect(fill = "grey75", color = NA)
+    plot.background  = element_rect(fill = "grey75", color = NA),
   )
+
+ggsave("Graphics/Week6_Resumes.png", dpi = 500, width = 10, height = 10)
+
