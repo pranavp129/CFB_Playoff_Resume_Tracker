@@ -273,7 +273,10 @@ ggplot(plot_data_dynamic, aes(x = col_id_centered, y = row_id)) +
   scale_y_continuous(breaks = NULL, expand = c(0,0), trans = "reverse") +
   coord_cartesian(clip = "off") +
   theme_minimal() +
-  labs(x = "", y = "", title = "CFB Playoff Resume by Team") +
+  labs(x = "", 
+       y = "", 
+       title = "AP Top 25 CFB Playoff Resumes",
+       subtitle = "Quad 1 = Teams ranked 1-34; Quad 2 = Teams ranked 34-68; Rankings created by a formula consisted of AP Rank, SRS, SP+, and ELO Ratings") +
   theme(
     axis.text.y = element_blank(),
     axis.text.x = element_text(size = 10),
