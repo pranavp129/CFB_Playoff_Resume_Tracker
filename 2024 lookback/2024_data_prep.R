@@ -6,22 +6,22 @@ library(dplyr)
 library(tidyr)
 
 # VALUES THAT CAN CHANGED:
-year_to_use <- 2025
-week_to_use <- 6
+year_to_use <- 2024
+week_to_use <- 15
 
 # ----------------------------
 # 2) Fetch Data
 # ----------------------------
-# Get 2025 games
+# Get games
 games <- cfbd_game_info(year = year_to_use)
 
-# Get AP rankings
-ap_poll <- cfbd_rankings(year = year_to_use, season_type = "regular", week = week_to_use) %>%
-  filter(poll == "AP Top 25") %>% 
-  select(team = school, AP_Rank = rank)
+# Get CFP rankings
+cfp_poll <- cfbd_rankings(year = year_to_use, season_type = "both") %>% 
+  filter(poll == "Playoff Committee Rankings", week == 16) %>% 
+  select(team = school, CFP_Rank = rank)
 
-# List of playoff contenders (AP Top 25 teams)
-contenders <- ap_poll$team
+# List of playoff contenders (CFP Top 25 teams)
+contenders <- cfp_poll$team
 
 # Conferences to include
 fbs_conf <- c("ACC", "Big 12", "Big Ten", "SEC", "Pac-12", 
@@ -47,19 +47,15 @@ sp_rankings <- cfbd_ratings_sp(year = year_to_use) %>%
 # ----------------------------
 # 3) Combine Rankings
 # ----------------------------
-combined_rankings <- ap_poll %>%
+combined_rankings <- cfp_poll %>%
   full_join(elo_rankings, by = "team") %>%
   full_join(srs_rankings, by = "team") %>%
   full_join(sp_rankings, by = "team") %>%
   rowwise() %>%
-  mutate(Avg_Rank = mean(c(AP_Rank, ELO_Rank, SRS_Rank, SP_Rank), na.rm = TRUE)) %>%
+  mutate(Avg_Rank = mean(c(CFP_Rank, ELO_Rank, SRS_Rank, SP_Rank), na.rm = TRUE)) %>%
   ungroup() %>%
   arrange(Avg_Rank) %>%
   mutate(Total_Rank = row_number())
-
-# Save combined ranking data
-combined_rankings_save_file_name <- paste0(year_to_use, "_", week_to_use, "_combined_rankings.rds")
-saveRDS(combined_rankings, combined_rankings_save_file_name)
 
 # ----------------------------
 # 4) Process Games for Resume Table
@@ -89,7 +85,6 @@ games_ranked <- games %>%
                      (home_away == "away_team" & away_points < home_points)) & opp_total_rank <= 34 ~ "Quad1_Loss",
       completed & ((home_away == "home_team" & home_points < away_points) |
                      (home_away == "away_team" & away_points < home_points)) & opp_total_rank > 34 ~ "Other_Loss",
-      !completed & opp_total_rank <= 34 ~ "Remaining_Q1",
       TRUE ~ NA_character_
     )
   ) %>%
@@ -105,17 +100,16 @@ resume <- games_ranked %>%
   slice(match(contenders, team))
 
 # Ensure all expected columns exist
-for(col in c("Quad1_Win", "Quad1_Loss", "Other_Loss", "Remaining_Q1")) {
+for(col in c("Quad1_Win", "Quad1_Loss", "Other_Loss")) {
   if(!col %in% names(resume)) resume[[col]] <- ""
 }
 
 resume <- resume %>%
-  mutate(across(c(Quad1_Win, Quad1_Loss, Other_Loss, Remaining_Q1), ~coalesce(.x, ""))) %>%
+  mutate(across(c(Quad1_Win, Quad1_Loss, Other_Loss), ~coalesce(.x, ""))) %>%
   select(team, 
          "Q1 Wins" = Quad1_Win,
          "Q1 Losses" = Quad1_Loss,
-         "Other Losses" = Other_Loss,
-         "Remaining Q1 Games" = Remaining_Q1)
+         "Other Losses" = Other_Loss)
 
 # ----------------------------
 # 6) Prepare Plot-Ready Data
@@ -124,8 +118,7 @@ teams_logos <- cfbd_team_info() %>%
   select(team = school, logo)
 
 plot_data <- resume %>%
-  pivot_longer(cols = c("Q1 Wins", "Q1 Losses", "Other Losses",
-                        "Remaining Q1 Games"),
+  pivot_longer(cols = c("Q1 Wins", "Q1 Losses", "Other Losses"),
                names_to = "ResultType", values_to = "Opponents") %>%
   mutate(Opponents = ifelse(Opponents == "", NA, Opponents)) %>%
   separate_rows(Opponents, sep = ",\\s*") %>%
