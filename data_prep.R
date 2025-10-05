@@ -7,7 +7,7 @@ library(tidyr)
 
 # VALUES THAT CAN CHANGED:
 year_to_use <- 2025
-week_to_use <- 6
+week_to_use <- 7
 
 # ----------------------------
 # 2) Fetch Data
@@ -35,14 +35,21 @@ elo_rankings <- cfbd_ratings_elo(year = year_to_use) %>%
   mutate(ELO_Rank = row_number()) %>%
   select(team, ELO_Rank)
 
-# SRS & SP+ rankings
+# SRS rankings
 srs_rankings <- cfbd_ratings_srs(year = year_to_use) %>%
   filter(conference %in% fbs_conf) %>%
   select(team, SRS_Rank = ranking)
 
+# SP+ rankings
 sp_rankings <- cfbd_ratings_sp(year = year_to_use) %>%
   filter(conference %in% fbs_conf) %>%
   select(team, SP_Rank = ranking)
+
+# FPI rankings
+fpi_rankings <- cfbd_ratings_fpi(year = year_to_use) %>% 
+  filter(conference %in% fbs_conf) %>%
+  arrange(resume_ranks_fpi) %>% 
+  select(team, FPI_rank = resume_ranks_fpi) 
 
 # ----------------------------
 # 3) Combine Rankings
@@ -51,6 +58,8 @@ combined_rankings <- ap_poll %>%
   full_join(elo_rankings, by = "team") %>%
   full_join(srs_rankings, by = "team") %>%
   full_join(sp_rankings, by = "team") %>%
+  full_join(fpi_rankings, by = "team") %>% 
+  mutate(AP_Rank = ifelse(is.na(AP_Rank), 136, AP_Rank)) %>%  # count all unranked teams as 136
   rowwise() %>%
   mutate(Avg_Rank = mean(c(AP_Rank, ELO_Rank, SRS_Rank, SP_Rank), na.rm = TRUE)) %>%
   ungroup() %>%
@@ -58,7 +67,7 @@ combined_rankings <- ap_poll %>%
   mutate(Total_Rank = row_number())
 
 # Save combined ranking data
-combined_rankings_save_file_name <- paste0(year_to_use, "_", week_to_use, "_combined_rankings.rds")
+combined_rankings_save_file_name <- paste0("Archived_Data/", year_to_use, "_", week_to_use, "_combined_rankings.rds")
 saveRDS(combined_rankings, combined_rankings_save_file_name)
 
 # ----------------------------
@@ -139,3 +148,6 @@ plot_data <- resume %>%
 
 # Save for plotting
 saveRDS(plot_data, "plot_data.rds")
+saveRDS(year_to_use, "year_to_use.rds")
+saveRDS(week_to_use, "week_to_use.rds")
+

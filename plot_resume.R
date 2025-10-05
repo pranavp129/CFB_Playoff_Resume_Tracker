@@ -11,6 +11,8 @@ library(ggimage)
 # 2) Load plot-ready data
 # ----------------------------
 plot_data <- readRDS("plot_data.rds")
+year_to_use <- readRDS("year_to_use.rds")
+week_to_use <- readRDS("week_to_use.rds")
 
 # ----------------------------
 # 3) Row + Column Setup
@@ -27,7 +29,9 @@ row_lookup <- tibble(
   left_join(plot_data %>% select(team, TeamLogo) %>% distinct(), by = "team")
 
 # ResultType order for columns
-result_levels <- c("Q1 Wins", "Q1 Losses", "Other Losses",
+result_levels <- c("Q1 Wins", 
+                   "Q1 Losses", 
+                   "Other Losses",
                    "Remaining Q1 Games")
 
 # Base logo sizes relative to number of rows
@@ -35,13 +39,13 @@ base_team_logo_size <- 1.0 / nrow(row_lookup)  # team logos
 base_opp_logo_size  <- .9 / nrow(row_lookup)  # opponent logos
 
 # ----------------------------
-# 4) Assign numeric positions for opponent logos
-# ----------------------------\
+# 4) Assign starting numeric positions for opponent logos
+# ----------------------------
 col_borders <- list(
   "Q1 Wins" = 0.25,
-  "Q1 Losses" = 0.4,
-  "Other Losses" = 0.55,
-  "Remaining Q1 Games" = 0.7
+  "Q1 Losses" = 0.45,
+  "Other Losses" = 0.60,
+  "Remaining Q1 Games" = 0.75
 )
 
 plot_data <- plot_data %>%
@@ -82,11 +86,11 @@ ggplot(plot_data, aes(x = col_id_left, y = row_id)) +
              size = base_team_logo_size,
              inherit.aes = FALSE) +
   
-  # x-axis setup
+  # x-axis labels
   scale_x_continuous(
-    #breaks = unlist(col_borders[result_levels]) - 0.02,
-    breaks = c(0.275, 0.425, 0.575, 0.775),
-    labels = result_levels,
+    # grey grid lines
+    breaks = c(0.275, 0.475, 0.625, 0.825),
+    labels =c("Q1 Wins", "Q1 Losses", "Other Losses", "Remaining Q1 Games"),
     limits = c(0, x_max),
     expand = c(0,0),
     position = "top"
@@ -103,10 +107,10 @@ ggplot(plot_data, aes(x = col_id_left, y = row_id)) +
   labs(
     x = "", 
     y = "", 
-    title = "AP Top 25 CFB Playoff Resumes (Week 6)",
-    subtitle = "Quad 1 (Q1) = Teams ranked 1-34; Rankings are a composite of AP, SRS, SP+, and ELO ratings",
-    caption = "*Data: CFBFastR*
-    **Pranav Pitchala**"
+    title = paste0("AP Top 25 CFB Playoff Resumes (Week ", week_to_use, ")"),
+    subtitle = "Quad 1 (Q1) = Teams ranked 1-34; Rankings are a composite of AP, SRS, SP+, FPI, and ELO ratings",
+    caption = "*Data: CFBFastR
+    **Pranav Pitchala"
   ) +
   theme(
     axis.text.y = element_blank(),
@@ -115,5 +119,7 @@ ggplot(plot_data, aes(x = col_id_left, y = row_id)) +
     plot.background  = element_rect(fill = "grey75", color = NA),
   )
 
-ggsave("Graphics/Week6_Resumes.png", dpi = 500, width = 10, height = 10)
+# save graphic
+graphic_file_name <- paste0("Graphics/", year_to_use, "_Week_", week_to_use, "_Resume.png")
+ggsave(graphic_file_name, dpi = 500, width = 10, height = 10)
 
