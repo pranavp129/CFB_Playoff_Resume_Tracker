@@ -57,6 +57,10 @@ combined_rankings <- ap_poll %>%
   arrange(Avg_Rank) %>%
   mutate(Total_Rank = row_number())
 
+# Save combined ranking data
+combined_rankings_save_file_name <- paste0(year_to_use, "_", week_to_use, "_combined_rankings.rds")
+saveRDS(combined_rankings, combined_rankings_save_file_name)
+
 # ----------------------------
 # 4) Process Games for Resume Table
 # ----------------------------
