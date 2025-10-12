@@ -45,7 +45,7 @@ col_borders <- list(
   "Q1 Wins" = 0.25,
   "Q1 Losses" = 0.5,
   "Other Losses" = 0.65,
-  "Remaining Q1 Games" = 0.8
+  "Remaining Q1 Games" = 0.75
 )
 
 plot_data <- plot_data %>%
@@ -89,8 +89,8 @@ ggplot(plot_data, aes(x = col_id_left, y = row_id)) +
   # x-axis labels
   scale_x_continuous(
     # grey grid lines
-    breaks = c(0.275, 0.525, 0.675, 0.875),
-    labels =c("Q1 Wins", "Q1 Losses", "Other Losses", "Remaining Q1 Games"),
+    breaks = c(0.275, 0.525, 0.6525, 0.825),
+    labels =c("Q1 Wins", "Q1 Losses", "Other L's", "Remaining Q1 Games"),
     limits = c(0, x_max),
     expand = c(0,0),
     position = "top"
