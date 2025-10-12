@@ -7,7 +7,7 @@ library(tidyr)
 
 # VALUES THAT CAN CHANGED:
 year_to_use <- 2025
-week_to_use <- 7
+week_to_use <- 8
 
 # ----------------------------
 # 2) Fetch Data

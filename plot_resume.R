@@ -43,9 +43,9 @@ base_opp_logo_size  <- .9 / nrow(row_lookup)  # opponent logos
 # ----------------------------
 col_borders <- list(
   "Q1 Wins" = 0.25,
-  "Q1 Losses" = 0.45,
-  "Other Losses" = 0.60,
-  "Remaining Q1 Games" = 0.75
+  "Q1 Losses" = 0.5,
+  "Other Losses" = 0.65,
+  "Remaining Q1 Games" = 0.8
 )
 
 plot_data <- plot_data %>%
@@ -89,7 +89,7 @@ ggplot(plot_data, aes(x = col_id_left, y = row_id)) +
   # x-axis labels
   scale_x_continuous(
     # grey grid lines
-    breaks = c(0.275, 0.475, 0.625, 0.825),
+    breaks = c(0.275, 0.525, 0.675, 0.875),
     labels =c("Q1 Wins", "Q1 Losses", "Other Losses", "Remaining Q1 Games"),
     limits = c(0, x_max),
     expand = c(0,0),
