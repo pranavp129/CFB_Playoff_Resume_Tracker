@@ -43,9 +43,9 @@ base_opp_logo_size  <- .9 / nrow(row_lookup)  # opponent logos
 # ----------------------------
 col_borders <- list(
   "Q1 Wins" = 0.25,
-  "Q1 Losses" = 0.5,
-  "Other Losses" = 0.65,
-  "Remaining Q1 Games" = 0.75
+  "Q1 Losses" = 0.45,
+  "Other Losses" = 0.6,
+  "Remaining Q1 Games" = 0.7
 )
 
 plot_data <- plot_data %>%
@@ -89,8 +89,8 @@ ggplot(plot_data, aes(x = col_id_left, y = row_id)) +
   # x-axis labels
   scale_x_continuous(
     # grey grid lines
-    breaks = c(0.275, 0.525, 0.6525, 0.825),
-    labels =c("Q1 Wins", "Q1 Losses", "Other L's", "Remaining Q1 Games"),
+    breaks = c(0.275, 0.475, 0.6025, 0.775),
+    labels =c("Q1 Wins", "Q1 Losses", "Other Ls", "Remaining Q1 Games"),
     limits = c(0, x_max),
     expand = c(0,0),
     position = "top"
@@ -108,7 +108,7 @@ ggplot(plot_data, aes(x = col_id_left, y = row_id)) +
     x = "", 
     y = "", 
     title = paste0("AP Top 25 CFB Playoff Resumes (Week ", week_to_use, ")"),
-    subtitle = "Quad 1 (Q1) = Teams ranked 1-34; Rankings are a composite of AP, SRS, SP+, FPI, and ELO ratings",
+    subtitle = "Rankings are a composite of AP, SRS, SP+, FPI, and ELO ratings\nQuad 1 (Q1): Home 1-30, Neutral 1-35, Away 1-40",
     caption = "*Data: CFBFastR
     **Pranav Pitchala"
   ) +

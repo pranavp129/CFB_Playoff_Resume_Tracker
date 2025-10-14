@@ -91,14 +91,26 @@ games_ranked <- games %>%
   mutate(
     opp = ifelse(home_away == "home_team", home_opp, away_opp),
     opp_total_rank = ifelse(home_away == "home_team", home_opp_rank, away_opp_rank),
+    location = case_when(
+      neutral_site ~ "Neutral",
+      home_away == "home_team" ~ "Home",
+      home_away == "away_team" ~ "Away"
+    ),
+    # Quad1 cutoffs by location
+    quad1_cutoff = case_when(
+      location == "Home" ~ 30,
+      location == "Neutral" ~ 35,
+      location == "Away" ~ 40
+    ),
+    # Result type
     result_type = case_when(
-      completed & home_away == "home_team" & home_points > away_points & opp_total_rank <= 34 ~ "Quad1_Win",
-      completed & home_away == "away_team" & away_points > home_points & opp_total_rank <= 34 ~ "Quad1_Win",
+      completed & home_away == "home_team" & home_points > away_points & opp_total_rank <= quad1_cutoff ~ "Quad1_Win",
+      completed & home_away == "away_team" & away_points > home_points & opp_total_rank <= quad1_cutoff ~ "Quad1_Win",
       completed & ((home_away == "home_team" & home_points < away_points) |
-                     (home_away == "away_team" & away_points < home_points)) & opp_total_rank <= 34 ~ "Quad1_Loss",
+                     (home_away == "away_team" & away_points < home_points)) & opp_total_rank <= quad1_cutoff ~ "Quad1_Loss",
       completed & ((home_away == "home_team" & home_points < away_points) |
-                     (home_away == "away_team" & away_points < home_points)) & opp_total_rank > 34 ~ "Other_Loss",
-      !completed & opp_total_rank <= 34 ~ "Remaining_Q1",
+                     (home_away == "away_team" & away_points < home_points)) & opp_total_rank > quad1_cutoff ~ "Other_Loss",
+      !completed & opp_total_rank <= quad1_cutoff ~ "Remaining_Q1",
       TRUE ~ NA_character_
     )
   ) %>%

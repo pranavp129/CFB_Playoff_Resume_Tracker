@@ -62,8 +62,9 @@ all_rankings <- expand.grid(year = years, week = weeks) %>%
   mutate(data = map(data, "result")) %>%
   unnest(data, names_sep = "_")
 
-# get games
-games <- map_df(years, ~ cfbd_game_info(year = .x))
+# get fbs vs fbs games
+games <- map_df(years, ~ cfbd_game_info(year = .x)) %>% 
+  filter(home_division == "fbs", away_division == "fbs")
 
 # merge games and rankings
 games_ranked <- games %>%
@@ -128,8 +129,8 @@ games_summary <- games_long %>%
   mutate(
     opp_rank_group = cut(
       opp_rank,
-      breaks = c(0, 10, 25, 50, 75, 100, 150),
-      labels = c("Top 10", "11–25", "26–50", "51–75", "76–100", "101+"),
+      breaks = seq(0, 150, by = 5),   # 0–10, 11–20, ..., 141–150
+      labels = paste(seq(1, 141, by = 5), seq(5, 150, by = 5), sep = "–"),
       include.lowest = TRUE
     )
   ) %>%
@@ -140,6 +141,12 @@ games_summary <- games_long %>%
     win_pct = wins / games,
     .groups = "drop"
   )
+
+# look at win %'s
+home_summary <- games_summary %>%
+  filter(location == "Home") %>%
+  arrange(desc(win_pct))
+
 
 # plot
 library(ggplot2)
@@ -154,3 +161,61 @@ ggplot(games_summary, aes(x = opp_rank_group, y = win_pct, fill = location)) +
     fill = "Location"
   ) +
   theme_minimal(base_size = 13)
+
+# logistic regression for win ~ opponent rank
+glm(win ~ opp_rank, data = filter(games_long, location == "Home"), family = "binomial")
+
+library(dplyr)
+library(ggplot2)
+
+# Fit separate logistic models for each location
+models <- games_long %>%
+  group_by(location) %>%
+  group_map(~ glm(win ~ opp_rank, data = .x, family = "binomial"), .keep = TRUE) %>%
+  setNames(unique(games_long$location))
+
+# Create a sequence of opponent ranks to predict
+opp_ranks <- 1:150  # adjust max rank as needed
+
+# Predict probabilities
+pred_df <- lapply(names(models), function(loc) {
+  model <- models[[loc]]
+  data.frame(
+    location = loc,
+    opp_rank = opp_ranks,
+    win_prob = predict(model, newdata = data.frame(opp_rank = opp_ranks), type = "response")
+  )
+}) %>%
+  bind_rows()
+
+# Plot
+ggplot(pred_df, aes(x = opp_rank, y = win_prob, color = location)) +
+  geom_line(size = 1.2) +
+  geom_hline(yintercept = 0.5, linetype = "dashed") +
+  labs(
+    title = "Predicted Win Probability vs Opponent Rank",
+    x = "Opponent Rank",
+    y = "Predicted Win Probability",
+    color = "Location"
+  ) +
+  theme_minimal()
+
+library(dplyr)
+
+games_long %>%
+  filter(location == "Home") %>%
+  summarise(
+    total = n(),
+    missing_win = sum(is.na(win)),
+    missing_opp_rank = sum(is.na(opp_rank))
+  )
+
+games_long %>%
+  group_by(location, opp_rank_group = cut(opp_rank, breaks = seq(0,150,5))) %>%
+  summarise(win_pct = mean(win, na.rm = TRUE), n = n()) %>%
+  ggplot(aes(x = opp_rank_group, y = win_pct, color = location)) +
+  geom_point() +
+  geom_hline(yintercept = 0.34, color = "black", size = 1) +
+  geom_line(aes(group = location)) +
+  labs(title = "Raw Win % vs Opponent Rank (FBS only)", y = "Win %")
+
