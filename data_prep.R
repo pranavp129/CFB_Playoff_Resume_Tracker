@@ -1,22 +1,22 @@
 # ----------------------------
 # 1) Load Libraries
 # ----------------------------
-library(cfbfastR)
 library(dplyr)
 library(tidyr)
-
-# VALUES THAT CAN CHANGED:
-year_to_use <- 2025
-week_to_use <- 8
 
 # ----------------------------
 # 2) Fetch Data
 # ----------------------------
-# Get 2025 games
-games <- cfbd_game_info(year = year_to_use)
+year_to_use <- readRDS("data/year_to_use.rds")
+week_to_use <- readRDS("data/week_to_use.rds")
+polls_data <- readRDS("data/polls.rds")
+elo_data <- readRDS("data/elo.rds")
+srs_data <- readRDS("data/srs.rds")
+sp_data <- readRDS("data/sp.rds")
+fpi_data <- readRDS("data/fpi.rds")
 
 # Get AP rankings
-ap_poll <- cfbd_rankings(year = year_to_use, season_type = "regular", week = week_to_use) %>%
+ap_poll <- polls_data %>%
   filter(poll == "AP Top 25") %>% 
   select(team = school, AP_Rank = rank)
 
@@ -29,24 +29,24 @@ fbs_conf <- c("ACC", "Big 12", "Big Ten", "SEC", "Pac-12",
               "FBS Independents", "Sun Belt", "American Athletic")
 
 # ELO rankings
-elo_rankings <- cfbd_ratings_elo(year = year_to_use) %>%
+elo_rankings <- elo_data %>%
   filter(conference %in% fbs_conf) %>%
   arrange(desc(elo)) %>%
   mutate(ELO_Rank = row_number()) %>%
   select(team, ELO_Rank)
 
 # SRS rankings
-srs_rankings <- cfbd_ratings_srs(year = year_to_use) %>%
+srs_rankings <- srs_data %>%
   filter(conference %in% fbs_conf) %>%
   select(team, SRS_Rank = ranking)
 
 # SP+ rankings
-sp_rankings <- cfbd_ratings_sp(year = year_to_use) %>%
+sp_rankings <- sp_data %>%
   filter(conference %in% fbs_conf) %>%
   select(team, SP_Rank = ranking)
 
 # FPI rankings
-fpi_rankings <- cfbd_ratings_fpi(year = year_to_use) %>% 
+fpi_rankings <- fpi_data %>% 
   filter(conference %in% fbs_conf) %>%
   arrange(resume_ranks_fpi) %>% 
   select(team, FPI_rank = resume_ranks_fpi) 
@@ -160,6 +160,4 @@ plot_data <- resume %>%
 
 # Save for plotting
 saveRDS(plot_data, "plot_data.rds")
-saveRDS(year_to_use, "year_to_use.rds")
-saveRDS(week_to_use, "week_to_use.rds")
 

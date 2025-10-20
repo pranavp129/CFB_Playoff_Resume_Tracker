@@ -1,15 +1,15 @@
-week6 <- readRDS("Archived_Data/2025_7_combined_rankings.rds")
-week7 <- readRDS("Archived_Data/2025_8_combined_rankings.rds")
+old <- readRDS("Archived_Data/2025_8_combined_rankings.rds")
+new <- readRDS("Archived_Data/2025_9_combined_rankings.rds")
 
 # Extract top 40 teams
-week6_top40 <- week6 %>% filter(Total_Rank <= 40) %>% pull(team)
-week7_top40 <- week7 %>% filter(Total_Rank <= 40) %>% pull(team)
+old_top40 <- old %>% filter(Total_Rank <= 40) %>% pull(team)
+new_top40 <- new %>% filter(Total_Rank <= 40) %>% pull(team)
 
-# New entrants in week 7
-new_teams <- setdiff(week7_top40, week6_top40)
+# New entrants in new week
+new_teams <- setdiff(new_top40, old_top40)
 
-# Dropouts from week 6
-dropped_teams <- setdiff(week7_top40, week6_top40)
+# Dropouts from old week
+dropped_teams <- setdiff(old_top40, new_top40)
 
 # Optional: create summary table
 summary_table <- tibble(
@@ -19,4 +19,3 @@ summary_table <- tibble(
 )
 
 summary_table
-

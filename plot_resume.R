@@ -11,8 +11,8 @@ library(ggimage)
 # 2) Load plot-ready data
 # ----------------------------
 plot_data <- readRDS("plot_data.rds")
-year_to_use <- readRDS("year_to_use.rds")
-week_to_use <- readRDS("week_to_use.rds")
+year_to_use <- readRDS("data/year_to_use.rds")
+week_to_use <- readRDS("data/week_to_use.rds")
 
 # ----------------------------
 # 3) Row + Column Setup
@@ -43,9 +43,9 @@ base_opp_logo_size  <- .9 / nrow(row_lookup)  # opponent logos
 # ----------------------------
 col_borders <- list(
   "Q1 Wins" = 0.25,
-  "Q1 Losses" = 0.45,
-  "Other Losses" = 0.6,
-  "Remaining Q1 Games" = 0.7
+  "Q1 Losses" = 0.5,
+  "Other Losses" = 0.65,
+  "Remaining Q1 Games" = 0.75
 )
 
 plot_data <- plot_data %>%
@@ -89,7 +89,7 @@ ggplot(plot_data, aes(x = col_id_left, y = row_id)) +
   # x-axis labels
   scale_x_continuous(
     # grey grid lines
-    breaks = c(0.275, 0.475, 0.6025, 0.775),
+    breaks = c(0.275, 0.525, 0.6525, 0.825),
     labels =c("Q1 Wins", "Q1 Losses", "Other Ls", "Remaining Q1 Games"),
     limits = c(0, x_max),
     expand = c(0,0),
