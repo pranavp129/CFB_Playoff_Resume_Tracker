@@ -10,6 +10,7 @@ library(ggimage)
 # ----------------------------
 # 2) Load plot-ready data
 # ----------------------------
+isProd <- readRDS("isProd.rds")
 plot_data <- readRDS("plot_data.rds")
 year_to_use <- readRDS("data/year_to_use.rds")
 week_to_use <- readRDS("data/week_to_use.rds")
@@ -121,5 +122,7 @@ ggplot(plot_data, aes(x = col_id_left, y = row_id)) +
 
 # save graphic
 graphic_file_name <- paste0("Graphics/", year_to_use, "_Week_", week_to_use, "_Resume.png")
+if (!isProd)
+  graphic_file_name <- paste0("Graphics/", year_to_use, "_Week_", week_to_use, "_Resume_Test.png")
 ggsave(graphic_file_name, dpi = 500, width = 10, height = 10)
 

@@ -1,3 +1,7 @@
+# SET TO TRUE IF YOU WANT PLOTS AND ARCHIVE DATA TO SAVE
+isProd = FALSE
+saveRDS(isProd, "isProd.rds")
+
 # ----------------------------
 # 1) Load Libraries
 # ----------------------------
@@ -68,7 +72,8 @@ combined_rankings <- ap_poll %>%
 
 # Save combined ranking data
 combined_rankings_save_file_name <- paste0("Archived_Data/", year_to_use, "_", week_to_use, "_combined_rankings.rds")
-saveRDS(combined_rankings, combined_rankings_save_file_name)
+if (isProd)
+  saveRDS(combined_rankings, combined_rankings_save_file_name)
 
 # ----------------------------
 # 4) Process Games for Resume Table
