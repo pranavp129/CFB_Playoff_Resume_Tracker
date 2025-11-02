@@ -5,7 +5,7 @@ library(cfbfastR)
 
 # VALUES THAT CAN CHANGED:
 year_to_use <- 2025
-week_to_use <- 10
+week_to_use <- 11
 saveRDS(year_to_use, "data/year_to_use.rds")
 saveRDS(week_to_use, "data/week_to_use.rds")
 
@@ -33,5 +33,11 @@ saveRDS(sp, "data/sp.rds")
 # Get FPI data
 fpi <- cfbd_ratings_fpi(year = year_to_use)
 saveRDS(fpi, "data/fpi.rds")
+
+# Get team logo data
+teams_logos <- cfbd_team_info() %>%
+  select(team = school, logo)
+saveRDS(fpi, "data/teams_logos.rds")
+
 
   
