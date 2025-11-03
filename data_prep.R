@@ -1,5 +1,5 @@
 # SET TO TRUE IF YOU WANT PLOTS AND ARCHIVE DATA TO SAVE
-isProd = FALSE
+isProd = TRUE
 saveRDS(isProd, "isProd.rds")
 
 # ----------------------------

@@ -1,5 +1,5 @@
-old <- readRDS("Archived_Data/2025_9_combined_rankings.rds")
-new <- readRDS("Archived_Data/2025_10_combined_rankings.rds")
+old <- readRDS("Archived_Data/2025_10_combined_rankings.rds")
+new <- readRDS("Archived_Data/2025_11_combined_rankings.rds")
 
 # Extract top 40 teams
 old_top40 <- old %>% filter(Total_Rank <= 40) %>% pull(team)
