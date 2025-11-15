@@ -6,7 +6,7 @@ library(dplyr)
 
 # VALUES THAT CAN CHANGED:
 year_to_use <- 2025
-week_to_use <- 11
+week_to_use <- 12
 saveRDS(year_to_use, "data/year_to_use.rds")
 saveRDS(week_to_use, "data/week_to_use.rds")
 

@@ -24,8 +24,13 @@ ap_poll <- polls_data %>%
   filter(poll == "AP Top 25") %>% 
   select(team = school, AP_Rank = rank)
 
-# List of playoff contenders (AP Top 25 teams)
-contenders <- ap_poll$team
+# Get AP rankings
+cfp_poll <- polls_data %>%
+  filter(poll == "Playoff Committee Rankings") %>% 
+  select(team = school, CFP_Rank = rank)
+
+# List of playoff contenders (CFP Top 25 teams)
+contenders <- cfp_poll$team
 
 # Conferences to include
 fbs_conf <- c("ACC", "Big 12", "Big Ten", "SEC", "Pac-12", 
@@ -63,9 +68,11 @@ combined_rankings <- ap_poll %>%
   full_join(srs_rankings, by = "team") %>%
   full_join(sp_rankings, by = "team") %>%
   full_join(fpi_rankings, by = "team") %>% 
-  mutate(AP_Rank = ifelse(is.na(AP_Rank), 136, AP_Rank)) %>%  # count all unranked teams as 136
+  full_join(cfp_poll, by = "team") %>% 
+  mutate(AP_Rank = ifelse(is.na(AP_Rank), 136, AP_Rank)) %>%  # count all unranked teams as 136 
+  mutate(CFP_Rank = ifelse(is.na(CFP_Rank), 136, CFP_Rank)) %>%  # count all unranked teams as 136
   rowwise() %>%
-  mutate(Avg_Rank = mean(c(AP_Rank, ELO_Rank, SRS_Rank, SP_Rank), na.rm = TRUE)) %>%
+  mutate(Avg_Rank = mean(c(CFP_Rank, AP_Rank, ELO_Rank, SRS_Rank, SP_Rank, FPI_rank), na.rm = TRUE)) %>%
   ungroup() %>%
   arrange(Avg_Rank) %>%
   mutate(Total_Rank = row_number())

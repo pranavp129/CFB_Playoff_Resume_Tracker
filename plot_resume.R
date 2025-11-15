@@ -42,11 +42,11 @@ base_opp_logo_size  <- .9 / nrow(row_lookup)  # opponent logos
 # ----------------------------
 # 4) Assign starting numeric positions for opponent logos
 # ----------------------------
-col_borders <- list(
+opplogo_starting_point <- list(
   "Q1 Wins" = 0.25,
-  "Q1 Losses" = 0.5,
-  "Other Losses" = 0.70,
-  "Remaining Q1 Games" = 0.80
+  "Q1 Losses" = 0.55,
+  "Other Losses" = 0.75,
+  "Remaining Q1 Games" = 0.90
 )
 
 plot_data <- plot_data %>%
@@ -59,7 +59,7 @@ plot_data <- plot_data %>%
     spacing = 0.05, #ifelse(n_logos > 4, 0.85 / (n_logos - 1), 0.2),
     # left justify logos horizontally in the column
     offset_left = spacing * (row_number() - 1),
-    col_id_left = as.numeric(col_borders[ResultType]) + offset_left,
+    col_id_left = as.numeric(opplogo_starting_point[ResultType]) + offset_left,
   ) %>%
   ungroup()
 
@@ -67,16 +67,63 @@ plot_data <- plot_data %>%
 x_max <- max(plot_data$col_id_left) + .05
 
 # ----------------------------
-# 5) Create Plot
+# 5) Highlighting setup
+# ----------------------------
+
+# current top 5 ranked conf champs
+conf_champs <- c("Ohio State", 
+                  "Texas A&M", 
+                  "Texas Tech", 
+                  "Miami", 
+                  "South Florida")
+# top 7 at larges
+at_larges  <- c("Indiana", 
+                  "Alabama", 
+                  "Georgia", 
+                  "Ole Miss",
+                  "Oregon", 
+                  "Notre Dame", 
+                  "Texas")
+
+row_lookup <- row_lookup %>%
+  mutate(
+    highlight_color = case_when(
+      team %in% conf_champs ~ "#C8E6C9",   # soft green
+      team %in% at_larges  ~ "#FFF59D",   # soft yellow
+      TRUE ~ "grey75"                        # default, same as background
+    )
+  )
+
+
+# ----------------------------
+# 6) Create Plot
 # ----------------------------
 
 ggplot(plot_data, aes(x = col_id_left, y = row_id)) +
   # horizontal and vertical grid lines
   geom_hline(yintercept = 0.5:(nrow(row_lookup)+0.5), color = "grey30", size = 0.3) +
-  geom_vline(xintercept = unlist(col_borders[result_levels]) - 0.05, color = "grey60", size = 0.3) +
+  geom_vline(xintercept = unlist(opplogo_starting_point[result_levels]) - 0.05, color = "grey60", size = 0.3) +
+  
+  # Thick line after top 4 teams (bye line)
+  geom_hline(
+    yintercept = row_lookup$row_id[4] + 0.5,
+    color = "grey30",
+    size = 1.0
+  ) +
 
   # vertical divider between team logos and result columns
   geom_vline(xintercept = 0.2, color = "black", size = 1) +
+  
+  # highlight playoff teams
+  geom_tile(
+    data = row_lookup,
+    aes(x = 0.5, y = row_id, fill = highlight_color),
+    width = Inf,
+    height = 0.95,
+    alpha = 0.45,
+    inherit.aes = FALSE
+  ) +
+  scale_fill_identity() +
   
   # opponent logos
   geom_image(aes(image = OppLogo, size = I(base_opp_logo_size))) +
@@ -90,7 +137,7 @@ ggplot(plot_data, aes(x = col_id_left, y = row_id)) +
   # x-axis labels
   scale_x_continuous(
     # grey grid lines
-    breaks = c(0.275, 0.525, 0.7025, 0.825),
+    breaks = c(0.275, 0.575, 0.775, 0.95),
     labels =c("Q1 Wins", "Q1 Losses", "Other Ls", "Q1 Remaining"),
     limits = c(0, x_max),
     expand = c(0,0),
@@ -108,8 +155,8 @@ ggplot(plot_data, aes(x = col_id_left, y = row_id)) +
   labs(
     x = "", 
     y = "", 
-    title = paste0("AP Top 25 CFB Playoff Resumes (Week ", week_to_use, ")"),
-    subtitle = "Rankings are a composite of AP, SRS, SP+, FPI, and ELO ratings\nQuad 1 (Q1): Home 1-30, Neutral 1-35, Away 1-40",
+    title = paste0("CFP Top 25 CFB Playoff Resumes (Week ", week_to_use, ")"),
+    subtitle = "Rankings are a composite of CFP, AP, SRS, SP+, FPI, and ELO ratings\nQuad 1 (Q1): Home 1-30, Neutral 1-35, Away 1-40\nGreen: Highed Ranked Conference Teams, Yellow: Top Ranked At-Larges",
     caption = "*Data: CFBFastR
     **Pranav Pitchala"
   ) +
