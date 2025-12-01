@@ -46,7 +46,7 @@ opplogo_starting_point <- list(
   "Q1 Wins" = 0.25,
   "Q1 Losses" = 0.55,
   "Other Losses" = 0.75,
-  "Remaining Q1 Games" = 0.90
+  "Remaining Q1 Games" = 0.95
 )
 
 plot_data <- plot_data %>%
@@ -75,15 +75,15 @@ conf_champs <- c("Ohio State",
                   "Texas A&M", 
                   "Texas Tech", 
                   "Miami", 
-                  "South Florida")
+                  "Tulane")
 # top 7 at larges
 at_larges  <- c("Indiana", 
-                  "Alabama", 
                   "Georgia", 
                   "Ole Miss",
                   "Oregon", 
-                  "Notre Dame", 
-                  "Texas")
+                  "Oklahoma", 
+                  "Notre Dame",
+                  "Alabama")
 
 row_lookup <- row_lookup %>%
   mutate(
@@ -138,7 +138,7 @@ ggplot(plot_data, aes(x = col_id_left, y = row_id)) +
   scale_x_continuous(
     # grey grid lines
     breaks = c(0.275, 0.575, 0.775, 0.95),
-    labels =c("Q1 Wins", "Q1 Losses", "Other Ls", "Q1 Remaining"),
+    labels =c("Q1 Wins", "Q1 Losses", "Other Ls", "Q1 Left"),
     limits = c(0, x_max),
     expand = c(0,0),
     position = "top"
